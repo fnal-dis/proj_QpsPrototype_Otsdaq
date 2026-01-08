@@ -3,13 +3,12 @@
 
 #include "otsdaq/Configurable/Configurable.h"
 #include "otsdaq/DataManager/DataConsumer.h"
-#include "otsdaq/DataManager/DataProducer.h"
 
 #include <string>
 
 namespace ots
 {
-class QPSDataDecoderBridge : public DataConsumer, public DataProducer, public Configurable
+class QPSDataDecoderBridge : public DataConsumer, public Configurable
 {
   public:
 	QPSDataDecoderBridge(std::string              supervisorApplicationUID,
@@ -31,13 +30,8 @@ class QPSDataDecoderBridge : public DataConsumer, public DataProducer, public Co
 	std::string*                        read_dataP_;
 	std::map<std::string, std::string>* read_headerP_;
 
-	std::string*                        write_dataP_;
-	std::map<std::string, std::string>* write_headerP_;
-
 	void decode(std::string*                        read_dataP_,
-	            std::map<std::string, std::string>* read_headerP_,
-	            std::string*                        write_dataP_,
-	            std::map<std::string, std::string>* write_headerP_);
+	            std::map<std::string, std::string>* read_headerP_);
 };
 }  // namespace ots
 

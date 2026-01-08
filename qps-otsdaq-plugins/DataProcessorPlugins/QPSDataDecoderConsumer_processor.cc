@@ -1,5 +1,3 @@
-#include "otsdaq/DataManager/DataConsumer.h"
-#include "otsdaq/DataManager/DataProducer.h"
 #include "qps-otsdaq-plugins/DataProcessorPlugins/QPSDataDecoderConsumer.h"
 
 using namespace ots;
@@ -14,7 +12,6 @@ QPSDataDecoderBridge::QPSDataDecoderBridge(
     : WorkLoop(processorUID)
     , DataConsumer(
           supervisorApplicationUID, inputBufferUID, processorUID, LowConsumerPriority)
-    , DataProducer(supervisorApplicationUID, outputBufferUID, processorUID)
     , Configurable(theXDAQContextConfigTree, configurationPath)
 {
 	;
@@ -24,13 +21,11 @@ void QPSDataDecoderBridge::startProcessingData(std::string runNumber)
 {
 	// Open file
 	DataConsumer::startProcessingData(runNumber);
-	DataProducer::startProcessingData(runNumber);
 }
 
 void QPSDataDecoderBridge::stopProcessingData(void)
 {
 	DataConsumer::stopProcessingData();
-	DataProducer::stopProcessingData();
 }
 
 void QPSDataDecoderBridge::decode(std::string*                        read_dataP_,
@@ -50,14 +45,10 @@ void QPSDataDecoderBridge::readDecodeWrite(void)
 	if(DataConsumer::read(read_dataP_, read_headerP_) < 0)
 	{
 		usleep(1000);
+		return;
 	}
 
-	decode(read_dataP_, read_headerP_, write_dataP_, write_headerP_);
-
-	while(DataProducer::write(write_dataP_, write_headerP_) < 0)
-	{
-		usleep(10000);
-	}
+	decode(read_dataP_, read_headerP_);
 }
 
 bool QPSDataDecoderBridge::workLoopThread(toolbox::task::WorkLoop*)
