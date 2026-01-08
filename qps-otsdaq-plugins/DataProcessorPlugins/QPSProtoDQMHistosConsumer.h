@@ -1,0 +1,46 @@
+#ifndef _ots_QPSProtoDQMHistosConsumer_h_
+#define _ots_QPSProtoDQMHistosConsumer_h_
+
+#include "otsdaq/Configurable/Configurable.h"
+#include "otsdaq/DataManager/DQMHistosConsumerBase.h"
+
+#include <string>
+
+namespace ots
+{
+class ConfigurationManager;
+class QPSProtoDQMHistos;
+
+class QPSProtoDQMHistosConsumer : public DQMHistosConsumerBase, public Configurable
+{
+  public:
+	QPSProtoDQMHistosConsumer(std::string              supervisorApplicationUID,
+	                      std::string              bufferUID,
+	                      std::string              processorUID,
+	                      const ConfigurationTree& theXDAQContextConfigTree,
+	                      const std::string&       configurationPath);
+	virtual ~QPSProtoDQMHistosConsumer(void);
+
+	void startProcessingData(std::string runNumber) override;
+	void stopProcessingData(void) override;
+
+  private:
+	bool workLoopThread(toolbox::task::WorkLoop* workLoop) override;
+	void fastRead(void);
+	void slowRead(void);
+
+	/// For fast read
+	std::string*                        dataP_;
+	std::map<std::string, std::string>* headerP_;
+	/// For slow read
+	std::string                        data_;
+	std::map<std::string, std::string> header_;
+
+	bool           saveDQMFile_;  ///< yes or no
+	std::string    DQMFilePath_;
+	std::string    DQMFilePrefix_;
+	QPSProtoDQMHistos* dqmHistos_;
+};
+}  // namespace ots
+
+#endif
