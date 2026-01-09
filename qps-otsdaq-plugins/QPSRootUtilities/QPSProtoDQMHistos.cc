@@ -1,4 +1,4 @@
-#include "otsdaq-demo/DemoRootUtilities/QPSProtoDQMHistos.h"
+#include "qps-otsdaq-plugins/QPSRootUtilities/QPSProtoDQMHistos.h"
 
 #include <stdint.h>
 #include <iostream>

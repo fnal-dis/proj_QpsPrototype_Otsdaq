@@ -10,9 +10,9 @@
 # use cmake 3.17 or later
 cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
-find_package(cetmodules 3.16.00 REQUIRED)
+find_package(cetmodules)
 
-project(qps-otsdaq-plugins VERSION 3.03.00)
+project(qps-otsdaq-plugins VERSION 1.00.00 )
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -68,8 +68,8 @@ endif()
 
 #cet_report_compiler_flags()
 
-find_package(otsdaq 2.06.06 REQUIRED)
-find_package(otsdaq-components 2.06.06 REQUIRED)
+find_package(otsdaq 2_07_00 )
+find_package(otsdaq_utilities 2_07_00 )
  
  # XDAQ Extra setup
  include_directories($ENV{XDAQ_ROOT}/include/linux $ENV{XDAQ_ROOT}/include)

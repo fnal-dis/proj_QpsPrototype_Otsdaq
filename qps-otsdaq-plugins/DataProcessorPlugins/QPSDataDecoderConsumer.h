@@ -8,16 +8,15 @@
 
 namespace ots
 {
-class QPSDataDecoderBridge : public DataConsumer, public Configurable
+class QPSDataDecoderConsumer : public DataConsumer, public Configurable
 {
   public:
-	QPSDataDecoderBridge(std::string              supervisorApplicationUID,
-	                     std::string              inputBufferUID,
-	                     std::string              outputBufferUID,
-	                     std::string              processorUID,
-	                     const ConfigurationTree& theXDAQContextConfigTree,
-	                     const std::string&       configurationPath);
-	virtual ~QPSDataDecoderBridge(void);
+	QPSDataDecoderConsumer(std::string              supervisorApplicationUID,
+	                       std::string              inputBufferUID,
+	                       std::string              processorUID,
+	                       const ConfigurationTree& theXDAQContextConfigTree,
+	                       const std::string&       configurationPath);
+	virtual ~QPSDataDecoderConsumer(void);
 
 	void startProcessingData(std::string runNumber) override;
 	void stopProcessingData(void) override;

@@ -1,8 +1,8 @@
 
 include(otsdaq::dataProcessor)
-cet_build_plugin(DemoDQMHistosConsumer otsdaq::dataProcessor LIBRARIES REG
-	otsdaq-demo::DemoRootUtilities
-    otsdaq::RootUtilities
+cet_build_plugin(QPSDataDecoderConsumer otsdaq::dataProcessor LIBRARIES REG
+	qps-otsdaq-plugins::QPSRootUtilities
+  otsdaq::RootUtilities
   )
   
 install_headers()
