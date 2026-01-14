@@ -2,13 +2,15 @@
 #define _OTS_QPSDATADECODERCONSUMER_H_
 
 #include "otsdaq/Configurable/Configurable.h"
-#include "otsdaq/DataManager/DataConsumer.h"
+#include "otsdaq/DataManager/DQMHistosConsumerBase.h"
+
+#include "qps-otsdaq-plugins/QPSRootUtilities/QPSProtoDQMHistos.h"
 
 #include <string>
 
 namespace ots
 {
-class QPSDataDecoderConsumer : public DataConsumer, public Configurable
+class QPSDataDecoderConsumer : public DQMHistosConsumerBase, public Configurable
 {
   public:
 	QPSDataDecoderConsumer(std::string              supervisorApplicationUID,
@@ -26,6 +28,15 @@ class QPSDataDecoderConsumer : public DataConsumer, public Configurable
 	void fastRead();
 
   private:
+	uint32_t    bitsSample_;
+	uint32_t    bitsChannel_;
+	uint32_t    bitsTimestamp_;
+	bool        doSaveRootFile_;
+	std::string rootFilePath_;
+	std::string rootFilePrefix_;
+
+	QPSProtoDQMHistos* dqmHistosMixin_;
+
 	std::string*                        read_dataP_;
 	std::map<std::string, std::string>* read_headerP_;
 
