@@ -11,30 +11,53 @@
 #include <TGraph.h>
 #include <TH1I.h>
 #include <TMultiGraph.h>
+#include <TTree.h>
 
-Int_t PLOT_MAX_LIMIT = 10000;
+Int_t PLOT_MAX_LIMIT = 1000;
 
 using namespace ots;
 
 std::map<uint8_t, uint8_t> channel_mapping;
 
+typedef union _bytearray
+{
+	uint64_t word;
+	uint8_t  bytes[8];
+} _bytearray;
+
+typedef struct qps_data
+{
+	uint64_t timestamp;
+	uint16_t channel;
+	Double_t data;
+} qps_data;
+
+typedef struct channel_sample
+{
+	float timestamp;
+	float data;
+} channel_sample;
+
+channel_sample the_samples[8];
+qps_data       the_qps_data;
+
 //==============================================================================
 QPSProtoDQMHistos::QPSProtoDQMHistos(void)
 {
-	decimation_rate    = 10;
+	decimation_rate    = 1;
 	previous_timestamp = 0;
 	current_timestamp  = 0;
 	timestamp_offset   = 0;
 
 	// Fix SMA port to ADC channel mapping
-	channel_mapping[2] = 0;
-	channel_mapping[3] = 1;
-	channel_mapping[0] = 2;
-	channel_mapping[1] = 3;
-	channel_mapping[5] = 4;
-	channel_mapping[4] = 5;
-	channel_mapping[7] = 6;
-	channel_mapping[6] = 7;
+	channel_mapping[0] = 0;
+	channel_mapping[1] = 1;
+	channel_mapping[2] = 2;
+	channel_mapping[3] = 3;
+	channel_mapping[4] = 7;
+	channel_mapping[5] = 6;
+	channel_mapping[6] = 5;
+	channel_mapping[7] = 4;
 }
 
 //==============================================================================
@@ -49,34 +72,70 @@ void QPSProtoDQMHistos::book(TFile* rootFile)
 	TDirectory* currentDir = rootFile->mkdir("General", "General");
 	currentDir->cd();
 
+	theTree = new TTree("samples", "QPS Samples");
+	for(int i = 0; i < 8; i++)
+	{
+		theTree->Branch(Form("channel_%u", i), &(the_samples[i]), "timestamp/f:data/f");
+	}
+	theTree->Branch("timestamp", &the_qps_data.timestamp, "timestamp/l");
+	theTree->Branch("channel", &the_qps_data.channel, "channel/s");
+	theTree->Branch("data", &the_qps_data.data, "data/D");
+
+	/*
+	**
+	**
+	**
+	**
+	** TODO: Create new Canvas for each channel, and make each one as simple a TGraph as possible
+	**
+	**
+	**
+	**
+	 */
 	std::stringstream ss;
 	sequenceNumbers_ = new TH1I("SequenceNumber", "Sequence Number", 256, 0, 255);
-	cAdcPlots_       = new TCanvas("ADC Data", "ADC Data Plots", 800, 600);
+	cAdcPlots_       = new TCanvas("ADC Data", "ADC Multigraph", 800, 600);
 	currentDir->Add(cAdcPlots_);
-	//cAdcPlots_->cd();
+	cAdcPlots_->cd();
 
 	multiGraph = new TMultiGraph();
 
 	for(int i = 0; i < 8; i++)
 	{
+		std::cout << "Creating Canvas " << i << std::endl;
+		cAdcCanvasPerChannel_[i] =
+		    new TCanvas(("c" + std::to_string(i)).c_str(),
+		                ("ADC Channel " + std::to_string(i)).c_str(),
+		                800,
+		                600);
+		currentDir->Add(cAdcCanvasPerChannel_[i]);
+
 		ss.str(std::string());
 		ss << "AdcChannel" << i;
-		dataNumbers_[i] = new TGraph(PLOT_MAX_LIMIT);
+		//dataNumbers_[i] = new TGraph(PLOT_MAX_LIMIT);
+		dataNumbers_[i] = new TGraph();
+		dataNumbers_[i]->Set(0);
+		dataNumbers_[i]->Draw("LP");
 		//for(int j = 0; j < PLOT_MAX_LIMIT; j++)
 		//{
 		//	dataNumbers_[i]->SetPoint(j, 0.0, 0.0);
 		//}
-		multiGraph->Add(dataNumbers_[i]);
+		multiGraph->Add(dataNumbers_[i], "PL");
+		//cAdcCanvasPerChannel_[i]->Add(dataNumbers_[i]);
+		cAdcCanvasPerChannel_[i]->Modified();
+		cAdcCanvasPerChannel_[i]->Update();
 		dataNumbers_[i]->SetTitle(ss.str().c_str());
-		dataNumbers_[i]->SetLineWidth(3);
+		dataNumbers_[i]->SetLineWidth(1);
+		dataNumbers_[i]->SetMarkerSize(2);
 		dataNumbers_[i]->SetLineColor(_colors[i]);
 		current_index[i]       = 0;
 		decimation_counter_[i] = 0;
 	}
 
+	std::cout << "Done creating Canvases" << std::endl;
 	multiGraph->SetTitle("ADC Data;Time;Sample value");
 	multiGraph->GetYaxis()->SetLimits(-5, 5);
-	multiGraph->Draw("ap 13d");
+	multiGraph->Draw("ALP 13d");
 	cAdcPlots_->Modified();
 	cAdcPlots_->Update();
 	//multiGraph->GetHistogram()->GetXaxis()->SetRangeUser(0.,2.5);
@@ -107,21 +166,6 @@ void QPSProtoDQMHistos::book(TFile* rootFile)
 // |  63 : 27   |  26 : 24 |  23:0     |
 // |------------|----------|-----------|
 
-typedef union _bytearray
-{
-	uint64_t word;
-	uint8_t  bytes[8];
-} _bytearray;
-
-typedef struct qps_data
-{
-	uint64_t timestamp;
-	uint16_t channel;
-	Double_t data;
-} qps_data;
-
-qps_data the_qps_data;
-
 void qps_parse(qps_data* qps_data_ptr, uint64_t* word_ptr)
 {
 	_bytearray the_word = *(_bytearray*)word_ptr;
@@ -149,7 +193,7 @@ void qps_parse(qps_data* qps_data_ptr, uint64_t* word_ptr)
 	//std::cout << "qps-parse data_sext  : 0x" << std::hex << data_sext << std::dec << std::endl;
 	//std::cout << "qps-parse data_signed:   " << data_signed << std::endl;
 
-	qps_data_ptr->data      = 5 * ((-(Double_t)(data_signed)) / pow(2.0, 24.0) +
+	qps_data_ptr->data      = 7 * ((-(Double_t)(data_signed)) / pow(2.0, 24.0) +
                               0.5);                    // Convert to physical voltage
 	qps_data_ptr->channel   = (the_word.word >> 24) & 0x7;  // Next 3 bits
 	qps_data_ptr->channel   = channel_mapping[qps_data_ptr->channel];  // Apply mapping
@@ -196,12 +240,17 @@ void QPSProtoDQMHistos::fill(std::string& buffer,
 		chan = the_qps_data.channel;
 
 		// Calculate timestamp offset for timestamp unwrapping
-		current_timestamp = (float)(the_qps_data.timestamp) * 6.666e-9;
+		current_timestamp = (the_qps_data.timestamp);
 		if(current_timestamp < previous_timestamp)
 		{
 			timestamp_offset += previous_timestamp;
 		}
 		previous_timestamp = current_timestamp;
+
+		timestamp_seconds = (double)(current_timestamp + timestamp_offset) / (150.0e6);
+
+		the_samples[chan].timestamp = (float)timestamp_seconds;
+		the_samples[chan].data      = (float)the_qps_data.data;
 
 		//std::cout << "chan: " << chan << ", idx: " << current_index[chan]
 		//          << ", dec_cnt: " << decimation_counter_[chan] << std::endl;
@@ -210,10 +259,12 @@ void QPSProtoDQMHistos::fill(std::string& buffer,
 		// Note that we add timestamp_offset to the timestamp to prevent wrap-arounds due to limited precision of the firmware timestamp
 		if(decimation_counter_[chan] == 0)
 		{
-			dataNumbers_[chan]->SetPoint(current_index[chan]++,
-			                             current_timestamp + timestamp_offset,
-			                             (float)the_qps_data.data);
-			current_index[chan] %= (PLOT_MAX_LIMIT);
+			dataNumbers_[chan]->SetPoint(
+			    current_index[chan]++, timestamp_seconds, (float)the_qps_data.data);
+			//current_index[chan] %= (PLOT_MAX_LIMIT);
+			cAdcCanvasPerChannel_[chan]->cd();
+			cAdcCanvasPerChannel_[chan]->Modified();
+			cAdcCanvasPerChannel_[chan]->Update();
 		}
 
 		decimation_counter_[chan] = (decimation_counter_[chan] + 1) % decimation_rate;
@@ -223,6 +274,29 @@ void QPSProtoDQMHistos::fill(std::string& buffer,
 	cAdcPlots_->Update();
 
 	sequenceNumbers_->Fill(sequenceNumber);
+}
+
+void QPSProtoDQMHistos::fillTree(std::string& buffer,
+                                 std::map<std::string, std::string> /*header*/)
+{
+	//uint8_t sequenceNumber = *(uint8_t*)&((buffer)[1]);
+
+	uint64_t* buf_addr      = (uint64_t*)&(buffer[2]);
+	uint64_t  buf_size_long = (buffer.size()) / sizeof(uint64_t);
+
+	uint8_t chan;
+
+	for(uint64_t* buf_ptr = buf_addr; buf_ptr < buf_addr + buf_size_long; buf_ptr++)
+	{
+		// Process raw data from buffer
+		qps_parse(&the_qps_data, buf_ptr);
+		chan                        = the_qps_data.channel;
+		the_samples[chan].timestamp = (float)the_qps_data.timestamp;
+		the_samples[chan].data      = (float)the_qps_data.data;
+		theTree->Fill();
+	}
+
+	theTree->Write();
 }
 
 //==============================================================================

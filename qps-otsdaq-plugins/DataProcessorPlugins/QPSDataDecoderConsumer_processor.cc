@@ -12,7 +12,7 @@ QPSDataDecoderConsumer::QPSDataDecoderConsumer(
     const std::string&       configurationPath)
     : WorkLoop(processorUID)
     , DQMHistosConsumerBase(
-          supervisorApplicationUID, bufferUID, processorUID, LowConsumerPriority)
+          supervisorApplicationUID, bufferUID, processorUID, HighConsumerPriority)
     , Configurable(theXDAQContextConfigTree, configurationPath)
     , bitsSample_(theXDAQContextConfigTree.getNode(configurationPath)
                       .getNode("SampleBits")
@@ -89,7 +89,8 @@ void QPSDataDecoderConsumer::readDecodeWrite(void)
 	}
 
 	// decode(read_dataP_, read_headerP_);
-	dqmHistosMixin_->fill(*read_dataP_, *read_headerP_);
+	//dqmHistosMixin_->fill(*read_dataP_, *read_headerP_);
+	dqmHistosMixin_->fillTree(*read_dataP_, *read_headerP_);
 
 	DataConsumer::setReadSubBuffer<std::string, std::map<std::string, std::string>>();
 }
