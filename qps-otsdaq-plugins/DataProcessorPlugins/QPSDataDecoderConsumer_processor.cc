@@ -33,11 +33,15 @@ QPSDataDecoderConsumer::QPSDataDecoderConsumer(
                           .getNode("RootFilePrefix")
                           .getValue<std::string>())
     , dqmHistosMixin_(new QPSProtoDQMHistos())
+    , hdf5WriterMixin_(new QPSHdf5Writer())
 {
 	__COUT__ << "Initializing QPSDataDecoderConsumer" << __E__;
 	__COUT__ << bitsSample_ << __E__;
 	__COUT__ << bitsTimestamp_ << __E__;
 	__COUT__ << bitsChannel_ << __E__;
+
+	__COUT__ << "Gonna test HDF5 writer " << __E__;
+	hdf5WriterMixin_->book();
 }
 
 QPSDataDecoderConsumer::~QPSDataDecoderConsumer(void) { ; }

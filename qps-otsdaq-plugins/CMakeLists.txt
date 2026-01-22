@@ -1,6 +1,7 @@
 #add_subdirectory(FEInterfaces)
 add_subdirectory(DataProcessorPlugins)
 add_subdirectory(QPSRootUtilities)
+add_subdirectory(QPSHdf5Utilities)
 #add_subdirectory(InterfaceTest)
 #add_subdirectory(ArtModules)
 #add_subdirectory(Generators)

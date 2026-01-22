@@ -4,6 +4,7 @@
 #include "otsdaq/Configurable/Configurable.h"
 #include "otsdaq/DataManager/DQMHistosConsumerBase.h"
 
+#include "qps-otsdaq-plugins/QPSHdf5Utilities/QPSHdf5Writer.h"
 #include "qps-otsdaq-plugins/QPSRootUtilities/QPSProtoDQMHistos.h"
 
 #include <string>
@@ -36,6 +37,7 @@ class QPSDataDecoderConsumer : public DQMHistosConsumerBase, public Configurable
 	std::string rootFilePrefix_;
 
 	QPSProtoDQMHistos* dqmHistosMixin_;
+	QPSHdf5Writer*     hdf5WriterMixin_;
 
 	std::string*                        read_dataP_;
 	std::map<std::string, std::string>* read_headerP_;
