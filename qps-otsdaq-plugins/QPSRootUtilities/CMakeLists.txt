@@ -3,6 +3,7 @@ SOURCE QPSProtoDQMHistos.cc
 	      LIBRARIES PRIVATE
 		  ROOT::Gui
 			ROOT::Tree
+			qps-otsdaq-plugins::QPSDefinitions
 )
 
 install_headers()

@@ -2,29 +2,34 @@
 
 using namespace ots;
 
-QPSHdf5Writer::QPSHdf5Writer() : dataset_name("/my_ints")
+QPSHdf5Writer::QPSHdf5Writer()
+    : dataset_name("/my_ints"), theWriter_(new HDF5StreamWriter<qps_sample>())
 {
-	data    = {10, 20, 30, 40, 50};
-	dims[0] = 1;
-	dims[1] = {static_cast<hsize_t>(data.size())};
 }
 
-void QPSHdf5Writer::book()
+void QPSHdf5Writer::open(const std::string& file)
 {
-	hid_t file_id = H5Fcreate("test_file.h5", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-	if(file_id < 0)
-	{
-		std::cerr << "Could not create file" << std::endl;
-		return;
-	}
-
-	herr_t status = H5LTmake_dataset(
-	    file_id, dataset_name.c_str(), 1, dims, H5T_NATIVE_INT, data.data());
-
-	if(status < 0)
-	{
-		std::cerr << " Failed to write dataset" << std::endl;
-	}
-
-	H5Fclose(file_id);
+	__COUT__ << "Opening file from QPSHdf5Writer:" << __E__;
+	__COUT__ << file << __E__;
+	theWriter_->open(file, "the_data", 1024 * 1024);
+	__COUT__ << "Opened file successfully" << __E__;
 }
+
+void QPSHdf5Writer::fill(std::string& buffer,
+                         std::map<std::string, std::string> /*header*/)
+{
+	//uint8_t sequenceNumber = *(uint8_t*)&((buffer)[1]);
+
+	//__COUT__ << "Filling from QPSHdf5Writer" << __E__;
+	uint64_t* buf_addr      = (uint64_t*)&(buffer[2]);
+	uint64_t  buf_size_long = (buffer.size()) / sizeof(uint64_t);
+
+	//uint8_t chan;
+	for(uint64_t* buf_ptr = buf_addr; buf_ptr < buf_addr + buf_size_long; buf_ptr++)
+	{
+		qps_parse_from_raw(&the_qps_sample, buf_ptr);
+		theWriter_->append(the_qps_sample);  // Flushes automatically
+	}
+}
+
+void QPSHdf5Writer::close() { theWriter_->close(); }

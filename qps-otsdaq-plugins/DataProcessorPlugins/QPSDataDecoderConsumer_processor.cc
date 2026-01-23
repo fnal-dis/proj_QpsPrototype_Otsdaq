@@ -39,9 +39,6 @@ QPSDataDecoderConsumer::QPSDataDecoderConsumer(
 	__COUT__ << bitsSample_ << __E__;
 	__COUT__ << bitsTimestamp_ << __E__;
 	__COUT__ << bitsChannel_ << __E__;
-
-	__COUT__ << "Gonna test HDF5 writer " << __E__;
-	hdf5WriterMixin_->book();
 }
 
 QPSDataDecoderConsumer::~QPSDataDecoderConsumer(void) { ; }
@@ -52,6 +49,8 @@ void QPSDataDecoderConsumer::startProcessingData(std::string runNumber)
 	DQMHistosBase::openFile(rootFilePath_ + "/" + rootFilePrefix_ + "_Run" + runNumber +
 	                        ".root");
 	dqmHistosMixin_->book(DQMHistosBase::theFile_);
+	hdf5WriterMixin_->open(rootFilePath_ + "/" + rootFilePrefix_ + "_Run" + runNumber +
+	                       ".h5");
 	DataConsumer::startProcessingData(runNumber);
 }
 
@@ -63,6 +62,7 @@ void QPSDataDecoderConsumer::stopProcessingData(void)
 		save();
 	}
 	closeFile();
+	hdf5WriterMixin_->close();
 }
 
 void QPSDataDecoderConsumer::decode(std::string* read_dataP_,
@@ -95,6 +95,7 @@ void QPSDataDecoderConsumer::readDecodeWrite(void)
 	// decode(read_dataP_, read_headerP_);
 	//dqmHistosMixin_->fill(*read_dataP_, *read_headerP_);
 	dqmHistosMixin_->fillTree(*read_dataP_, *read_headerP_);
+	hdf5WriterMixin_->fill(*read_dataP_, *read_headerP_);
 
 	DataConsumer::setReadSubBuffer<std::string, std::map<std::string, std::string>>();
 }

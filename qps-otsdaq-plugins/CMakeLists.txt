@@ -1,4 +1,5 @@
 #add_subdirectory(FEInterfaces)
+add_subdirectory(QPSDefinitions)
 add_subdirectory(DataProcessorPlugins)
 add_subdirectory(QPSRootUtilities)
 add_subdirectory(QPSHdf5Utilities)
