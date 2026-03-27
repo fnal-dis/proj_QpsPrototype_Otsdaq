@@ -27,13 +27,16 @@ QPSDataDecoderConsumer::QPSDataDecoderConsumer(
                           .getNode("DoSave")
                           .getValue<bool>())
     , rootFilePath_(theXDAQContextConfigTree.getNode(configurationPath)
-                        .getNode("RootFilePath")
+                        .getNode("Hdf5FilePath")
                         .getValue<std::string>())
     , rootFilePrefix_(theXDAQContextConfigTree.getNode(configurationPath)
-                          .getNode("RootFilePrefix")
+                          .getNode("Hdf5FilePrefix")
                           .getValue<std::string>())
     , dqmHistosMixin_(new QPSProtoDQMHistos())
-    , hdf5WriterMixin_(new QPSHdf5Writer())
+    , qpsHdf5WriterMixin_(new QPSHdf5Writer(
+			    theXDAQContextConfigTree.getNode(configurationPath)
+			    .getNode("VoltageScale")
+			    .getValue<float>()))
 {
 	__COUT__ << "Initializing QPSDataDecoderConsumer" << __E__;
 	__COUT__ << bitsSample_ << __E__;
@@ -46,10 +49,10 @@ QPSDataDecoderConsumer::~QPSDataDecoderConsumer(void) { ; }
 void QPSDataDecoderConsumer::startProcessingData(std::string runNumber)
 {
 	// Open file
-	DQMHistosBase::openFile(rootFilePath_ + "/" + rootFilePrefix_ + "_Run" + runNumber +
-	                        ".root");
-	dqmHistosMixin_->book(DQMHistosBase::theFile_);
-	hdf5WriterMixin_->open(rootFilePath_ + "/" + rootFilePrefix_ + "_Run" + runNumber +
+	//DQMHistosBase::openFile(rootFilePath_ + "/" + rootFilePrefix_ + "_Run" + runNumber +
+	//                       ".root");
+	//dqmHistosMixin_->book(DQMHistosBase::theFile_);
+	qpsHdf5WriterMixin_->open(rootFilePath_ + "/" + rootFilePrefix_ + "_Run" + runNumber +
 	                       ".h5");
 	DataConsumer::startProcessingData(runNumber);
 }
@@ -62,7 +65,7 @@ void QPSDataDecoderConsumer::stopProcessingData(void)
 		save();
 	}
 	closeFile();
-	hdf5WriterMixin_->close();
+	qpsHdf5WriterMixin_->close();
 }
 
 void QPSDataDecoderConsumer::decode(std::string* read_dataP_,
@@ -94,8 +97,8 @@ void QPSDataDecoderConsumer::readDecodeWrite(void)
 
 	// decode(read_dataP_, read_headerP_);
 	//dqmHistosMixin_->fill(*read_dataP_, *read_headerP_);
-	dqmHistosMixin_->fillTree(*read_dataP_, *read_headerP_);
-	hdf5WriterMixin_->fill(*read_dataP_, *read_headerP_);
+	//dqmHistosMixin_->fillTree(*read_dataP_, *read_headerP_);
+	qpsHdf5WriterMixin_->fill(*read_dataP_, *read_headerP_);
 
 	DataConsumer::setReadSubBuffer<std::string, std::map<std::string, std::string>>();
 }

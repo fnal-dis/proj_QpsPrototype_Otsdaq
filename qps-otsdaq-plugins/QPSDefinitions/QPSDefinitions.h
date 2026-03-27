@@ -12,6 +12,6 @@ typedef struct qps_sample
 	float    data;
 } qps_sample;
 
-void qps_parse_from_raw(qps_sample* qps_data_ptr, uint64_t* word_ptr);
+void qps_parse_from_raw(qps_sample* qps_data_ptr, uint64_t* word_ptr, float scale);
 
 #endif  // QPSDEFINITIONS_H_

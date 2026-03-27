@@ -37,7 +37,7 @@ class QPSDataDecoderConsumer : public DQMHistosConsumerBase, public Configurable
 	std::string rootFilePrefix_;
 
 	QPSProtoDQMHistos* dqmHistosMixin_;
-	QPSHdf5Writer*     hdf5WriterMixin_;
+	QPSHdf5Writer*     qpsHdf5WriterMixin_;
 
 	std::string*                        read_dataP_;
 	std::map<std::string, std::string>* read_headerP_;

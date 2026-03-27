@@ -37,7 +37,7 @@ namespace ots
 class QPSHdf5Writer
 {
   public:
-	QPSHdf5Writer(void);
+	QPSHdf5Writer(float param_Scale);
 	void open(const std::string& file);
 	void close();
 	void fill(std::string& buffer, std::map<std::string, std::string> header);
@@ -47,9 +47,11 @@ class QPSHdf5Writer
 	std::vector<int> data;
 	hsize_t          dims[1];
 
+
 	HDF5StreamWriter<qps_sample>* theWriter_;
 
 	qps_sample the_qps_sample;
+	float param_Scale_;
 	//std::vector<qps_sample> dataBuffer_;
 };
 }  // namespace ots

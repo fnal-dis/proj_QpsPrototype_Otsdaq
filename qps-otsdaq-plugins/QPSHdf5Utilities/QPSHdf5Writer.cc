@@ -2,8 +2,8 @@
 
 using namespace ots;
 
-QPSHdf5Writer::QPSHdf5Writer()
-    : dataset_name("/my_ints"), theWriter_(new HDF5StreamWriter<qps_sample>())
+QPSHdf5Writer::QPSHdf5Writer(float param_Scale)
+    : dataset_name("/my_ints"), theWriter_(new HDF5StreamWriter<qps_sample>()), param_Scale_(param_Scale)
 {
 }
 
@@ -27,7 +27,7 @@ void QPSHdf5Writer::fill(std::string& buffer,
 	//uint8_t chan;
 	for(uint64_t* buf_ptr = buf_addr; buf_ptr < buf_addr + buf_size_long; buf_ptr++)
 	{
-		qps_parse_from_raw(&the_qps_sample, buf_ptr);
+		qps_parse_from_raw(&the_qps_sample, buf_ptr, param_Scale_);
 		theWriter_->append(the_qps_sample);  // Flushes automatically
 	}
 }
