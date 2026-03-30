@@ -20,6 +20,8 @@ class HDF5StreamWriter
 	void append(const T& record);
 	void appendBatch(const T* records, hsize_t count);
 	void close();
+	void attrwrite_string(std::string title, std::string value);
+	void attrwrite_float(std::string title, float value);
 
   private:
 	void flush();
@@ -131,36 +133,21 @@ void HDF5StreamWriter<T>::close()
 }
 
 template<typename T>
-void HDF5StreamWriter<T>::compressOnClose()
+void HDF5StreamWriter<T>::attrwrite_string(std::string title, std::string value)
 {
-	if(total_rows_ == 0)
-		return;
+	H5::StrType   str_type(H5::PredType::C_S1, H5T_VARIABLE);
+	H5::Attribute attr =
+	    dataset_.createAttribute(title.c_str(), str_type, H5::DataSpace(H5S_SCALAR));
+	attr.write(str_type, &value);
+}
 
-	std::vector<T> data(total_rows_);
-	dataset_.read(data.data(), HDF5TypeTraits<T>::type());
+template<typename T>
+void HDF5StreamWriter<T>::attrwrite_float(std::string title, float value)
+{
+	H5::Attribute attr = dataset_.createAttribute(
+	    title.c_str(), H5::PredType::NATIVE_INT, H5::DataSpace(H5S_SCALAR));
 
-	std::string tmp = dataset_name_ + "_compressed";
-
-	hsize_t dims[1]  = {total_rows_};
-	hsize_t chunk[1] = {chunk_rows_};
-
-	H5::DataSpace space(1, dims);
-
-	H5::DSetCreatPropList plist;
-	plist.setChunk(1, chunk);
-	plist.setShuffle();
-	plist.setDeflate(6);
-
-	H5::DataSet compressed =
-	    file_.createDataSet(tmp, HDF5TypeTraits<T>::type(), space, plist);
-
-	compressed.write(data.data(), HDF5TypeTraits<T>::type());
-
-	dataset_.close();
-	file_.unlink(dataset_name_);
-	file_.move(tmp, dataset_name_);
-
-	dataset_ = file_.openDataSet(dataset_name_);
+	attr.write(H5::PredType::NATIVE_INT, &value);
 }
 
 #endif

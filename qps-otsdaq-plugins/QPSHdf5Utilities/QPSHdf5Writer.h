@@ -20,6 +20,9 @@ struct HDF5TypeTraits<qps_sample>
 		t.insertMember("timestamp",
                    HOFFSET(qps_sample, timestamp),
                    H5::PredType::NATIVE_UINT64);
+		t.insertMember("timestamp_raw",
+                   HOFFSET(qps_sample, timestamp_raw),
+                   H5::PredType::NATIVE_UINT64);
 		t.insertMember("channel",
                    HOFFSET(qps_sample, channel),
                    H5::PredType::NATIVE_UINT16);
@@ -41,17 +44,25 @@ class QPSHdf5Writer
 	void open(const std::string& file);
 	void close();
 	void fill(std::string& buffer, std::map<std::string, std::string> header);
+	void writeAttributes(void);
+
+  private:
+	uint64_t unravel_absolute_time_delta(uint64_t raw_timestamp);
 
   protected:
 	std::string      dataset_name;
 	std::vector<int> data;
 	hsize_t          dims[1];
 
-
 	HDF5StreamWriter<qps_sample>* theWriter_;
 
+	bool isFirstPacket_;
+
 	qps_sample the_qps_sample;
-	float param_Scale_;
+	float      param_Scale_;
+
+	uint64_t prev_timestamp = UINT64_MAX;
+	int64_t  time_delta     = 0;
 	//std::vector<qps_sample> dataBuffer_;
 };
 }  // namespace ots

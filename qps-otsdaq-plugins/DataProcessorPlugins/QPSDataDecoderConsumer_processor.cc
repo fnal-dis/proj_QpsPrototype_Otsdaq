@@ -33,10 +33,10 @@ QPSDataDecoderConsumer::QPSDataDecoderConsumer(
                           .getNode("Hdf5FilePrefix")
                           .getValue<std::string>())
     , dqmHistosMixin_(new QPSProtoDQMHistos())
-    , qpsHdf5WriterMixin_(new QPSHdf5Writer(
-			    theXDAQContextConfigTree.getNode(configurationPath)
-			    .getNode("VoltageScale")
-			    .getValue<float>()))
+    , qpsHdf5WriterMixin_(
+          new QPSHdf5Writer(theXDAQContextConfigTree.getNode(configurationPath)
+                                .getNode("VoltageScale")
+                                .getValue<float>()))
 {
 	__COUT__ << "Initializing QPSDataDecoderConsumer" << __E__;
 	__COUT__ << bitsSample_ << __E__;
@@ -53,7 +53,7 @@ void QPSDataDecoderConsumer::startProcessingData(std::string runNumber)
 	//                       ".root");
 	//dqmHistosMixin_->book(DQMHistosBase::theFile_);
 	qpsHdf5WriterMixin_->open(rootFilePath_ + "/" + rootFilePrefix_ + "_Run" + runNumber +
-	                       ".h5");
+	                          ".h5");
 	DataConsumer::startProcessingData(runNumber);
 }
 
@@ -65,6 +65,7 @@ void QPSDataDecoderConsumer::stopProcessingData(void)
 		save();
 	}
 	closeFile();
+	qpsHdf5WriterMixin_->writeAttributes();
 	qpsHdf5WriterMixin_->close();
 }
 

@@ -8,6 +8,7 @@
 typedef struct qps_sample
 {
 	uint64_t timestamp;
+	uint64_t timestamp_raw;
 	uint16_t channel;
 	float    data;
 } qps_sample;
