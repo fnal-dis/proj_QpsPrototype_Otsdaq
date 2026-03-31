@@ -61,7 +61,7 @@ class QPSHdf5Writer
 	qps_sample the_qps_sample;
 	float      param_Scale_;
 
-	uint64_t prev_timestamp = UINT64_MAX;
+	uint64_t prev_timestamp = 0;
 	int64_t  time_delta     = 0;
 
 	uint64_t absolute_timestamp = 0;

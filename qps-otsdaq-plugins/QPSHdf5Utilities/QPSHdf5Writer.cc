@@ -20,6 +20,7 @@ void QPSHdf5Writer::open(const std::string& file)
 	__COUT__ << "Opening file from QPSHdf5Writer:" << __E__;
 	__COUT__ << file << __E__;
 	theWriter_->open(file, "the_data", 1024 * 1024);
+	QPSHdf5Writer::prev_timestamp     = raw_timestamp_max;
 	QPSHdf5Writer::absolute_timestamp = 0;
 	__COUT__ << "Opened file successfully" << __E__;
 }
