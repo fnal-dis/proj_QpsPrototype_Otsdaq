@@ -63,6 +63,8 @@ class QPSHdf5Writer
 
 	uint64_t prev_timestamp = UINT64_MAX;
 	int64_t  time_delta     = 0;
+
+	uint64_t absolute_timestamp = 0;
 	//std::vector<qps_sample> dataBuffer_;
 };
 }  // namespace ots

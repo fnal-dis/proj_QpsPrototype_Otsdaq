@@ -20,6 +20,7 @@ void QPSHdf5Writer::open(const std::string& file)
 	__COUT__ << "Opening file from QPSHdf5Writer:" << __E__;
 	__COUT__ << file << __E__;
 	theWriter_->open(file, "the_data", 1024 * 1024);
+	QPSHdf5Writer::absolute_timestamp = 0;
 	__COUT__ << "Opened file successfully" << __E__;
 }
 
@@ -37,8 +38,10 @@ void QPSHdf5Writer::fill(std::string& buffer,
 	{
 		qps_parse_from_raw(&the_qps_sample, buf_ptr, param_Scale_);
 
-		the_qps_sample.timestamp +=
+		QPSHdf5Writer::absolute_timestamp +=
 		    unravel_absolute_time_delta(the_qps_sample.timestamp_raw);
+
+		the_qps_sample.timestamp = QPSHdf5Writer::absolute_timestamp;
 
 		theWriter_->append(the_qps_sample);  // Flushes automatically
 	}
