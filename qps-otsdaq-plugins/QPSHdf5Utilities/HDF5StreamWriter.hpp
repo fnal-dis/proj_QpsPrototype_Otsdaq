@@ -128,6 +128,7 @@ void HDF5StreamWriter<T>::flush()
 template<typename T>
 void HDF5StreamWriter<T>::close()
 {
+	flush();
 	dataset_.close();
 	file_.close();
 }
