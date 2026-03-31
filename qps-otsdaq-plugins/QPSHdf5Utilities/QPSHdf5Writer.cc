@@ -20,8 +20,9 @@ void QPSHdf5Writer::open(const std::string& file)
 	__COUT__ << "Opening file from QPSHdf5Writer:" << __E__;
 	__COUT__ << file << __E__;
 	theWriter_->open(file, "the_data", 1024 * 1024);
-	QPSHdf5Writer::prev_timestamp     = raw_timestamp_max;
+	QPSHdf5Writer::prev_timestamp     = 0;
 	QPSHdf5Writer::absolute_timestamp = 0;
+	QPSHdf5Writer::isFirstPacket_     = true;
 	__COUT__ << "Opened file successfully" << __E__;
 }
 
@@ -68,8 +69,18 @@ uint64_t QPSHdf5Writer::unravel_absolute_time_delta(uint64_t raw_timestamp)
 {
 	/* Handles wrapping of raw timestamp and returns a strictly positive time delta */
 
-	// Nominally we can just do this
-	time_delta = raw_timestamp - QPSHdf5Writer::prev_timestamp;
+	if(QPSHdf5Writer::isFirstPacket_)
+	{
+		// First delta is always 0
+		time_delta = 0;
+
+		QPSHdf5Writer::isFirstPacket_ = false;
+	}
+	else
+	{
+		// Otherwise, nominally we can just do this
+		time_delta = raw_timestamp - QPSHdf5Writer::prev_timestamp;
+	}
 
 	// If negative, we've wrapped! But the difference is not necessarily uniform
 	if(time_delta < 0)
