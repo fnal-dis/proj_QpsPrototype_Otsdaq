@@ -145,9 +145,9 @@ template<typename T>
 void HDF5StreamWriter<T>::attrwrite_float(std::string title, float value)
 {
 	H5::Attribute attr = file_.createAttribute(
-	    title.c_str(), H5::PredType::NATIVE_INT, H5::DataSpace(H5S_SCALAR));
+	    title.c_str(), H5::PredType::NATIVE_FLOAT, H5::DataSpace(H5S_SCALAR));
 
-	attr.write(H5::PredType::NATIVE_INT, &value);
+	attr.write(H5::PredType::NATIVE_FLOAT, &value);
 }
 
 #endif

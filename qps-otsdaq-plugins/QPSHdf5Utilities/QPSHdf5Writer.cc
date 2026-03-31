@@ -51,14 +51,16 @@ void QPSHdf5Writer::writeAttributes(void)
 {
 	using namespace std::chrono;
 
-	auto now = system_clock::now();
-	auto s   = floor<seconds>(now);
-	auto ms  = duration_cast<milliseconds>(now - s).count();
+	auto now       = system_clock::now();
+	auto beginning = now - seconds(QPSHdf5Writer::absolute_timestamp / 150000000);
+
+	auto s  = floor<seconds>(beginning);
+	auto ms = duration_cast<milliseconds>(beginning - s).count();
 
 	std::string time_str = std::format("{:%Y-%m-%d %H:%M:%S}.{:03}", s, ms);
 
 	theWriter_->attrwrite_string("time_datum", time_str);
-	theWriter_->attrwrite_float("sampling_rate", 150e6);
+	theWriter_->attrwrite_float("sampling_rate", 150.0e6);
 }
 
 uint64_t QPSHdf5Writer::unravel_absolute_time_delta(uint64_t raw_timestamp)
